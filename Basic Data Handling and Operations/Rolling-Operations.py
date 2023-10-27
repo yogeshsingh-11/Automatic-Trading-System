@@ -13,3 +13,18 @@ for ticker in tickers:
     
 #dropping NaN values
 cl_price.dropna(axis=0,how='any',inplace=True)
+
+# Return calculation
+daily_return = cl_price.pct_change() #Creates dataframe with daily return for each stock
+daily_return.mean(axis=1) #prints mean daily return for each stock
+daily_return.std() #prints standard deviation of daily returns for each stock
+
+# Rolling operations (simple)
+daily_return.rolling(window=10).mean()
+daily_return.rolling(window=10).std()
+daily_return.rolling(window=10).max()
+daily_return.rolling(window=10).sum()
+
+# Rolling operations (exponentialy weighted)
+daily_return.ewm(com=10, min_periods=10).mean()
+daily_return.ewm(com=10, min_periods=10).std()
