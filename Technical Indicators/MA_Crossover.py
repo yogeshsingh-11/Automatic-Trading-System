@@ -45,6 +45,39 @@ def backtest(data):
     return total_return, sharpe_ratio, max_drawdown
 
 
+# Optimization using grid search to find the best Sharpe Ratio
+def optimize_sharpe_ratio(ticker, start, end, short_range, long_range):
+    best_sharpe = float('-inf')
+    best_params = (None, None)
+
+    param_grid = {'short_window': short_range, 'long_window': long_range}
+    grid = ParameterGrid(param_grid)
+
+    data = fetch_data(ticker, start, end)
+
+    for params in grid:
+        short_window = params['short_window']
+        long_window = params['long_window']
+
+        if short_window >= long_window:
+            continue
+
+        temp_data = data.copy()
+        temp_data = calculate_moving_averages(temp_data, short_window, long_window)
+        temp_data = implement_strategy(temp_data)
+
+        try:
+            _, sharpe_ratio, _ = backtest(temp_data)
+        except KeyError as e:
+            print(f"Skipping parameters ({short_window}, {long_window}) due to missing columns: {e}")
+            continue
+
+        if sharpe_ratio > best_sharpe:
+            best_sharpe = sharpe_ratio
+            best_params = (short_window, long_window)
+
+    return best_params, best_sharpe
+
 # Visualization
 def plot_results(data):
     plt.figure(figsize=(14, 7))
